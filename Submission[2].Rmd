@@ -1,0 +1,55 @@
+
+
+```{r}
+model2 <- aov(FS ~ SHIDR * RAD, data=sub_data)
+model2
+```
+A * B in the model means A + B + A: B means A, B and interactions between
+additional parameter when A = something and B = something 6.
+
+As you have RAD * SHIDR interactions, that means you have 4 linear functions -
+For each one character function Si * RAD + something so they ask about the average
+free words or slopes
+```{r}
+coefficients(aov(FS ~ SHIDR * RAD, data=sub_data))
+
+```
+
+```{r}
+model2 <- aov(FS ~ RAD*SHIDR, data=sub_data)
+
+nowe.dane <- data.frame(RAD=rep(c(400, mean(sub_data$RAD), 600), each=4), SHIDR=rep(levels(sub_data$SHIDR), 3))
+predict(model2, nowe.dane)
+
+```
+
+
+
+
+```{r}
+model4 <- aov(RAD ~ I(T^2) + T, data = sub_data)
+summary(lm( RAD ~ I(T^2) + T, data = sub_data))$fstatistic
+```
+
+
+```{r}
+anova(model2, model3, test=F)
+```
+
+
+
+```{r}
+model4 <- lm(RAD ~ I(T^2) + T, data=sub_data)
+summary(model4)
+round((summary(model4)$sigma)**2,3)
+
+plot(model4)
+
+library(car)
+anova(model4)
+
+vif(model4)
+
+```
+
+

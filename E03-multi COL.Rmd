@@ -1,0 +1,131 @@
+---
+output:
+  html_document: default
+  pdf_document: default
+---
+### Before you proceed:
+Remember that your data files and script of the R Markdown should be in the same working directory. Even if you change the working directory in a code chunk of R Markdown, the working directory will be reset to the original working directory as the code chunk gets executed. 
+By defalut the working directory of a R Markdown script is the directory where you have just saved the script.
+
+```{r}
+setwd("~/Linear Models")
+getwd()
+COL <- read.csv2("./COL.csv")
+p<-4
+n<-dim(COL)[1]
+library(car)
+```
+
+Suppose, one wants to perform a linear regression to model the cholesterol level as a function of weight (P) ,height (H) and age (E). So, We will create here the linear model where we are trying to predict the 'Colestrol level (C)' based on  the variables Weight(P), Age (E) and Height(H) using the data set COL. The code written below accomplishes this task.
+```{r}
+mod<-lm(C~P+E+H,COL)
+```
+We can now see the summary of the model. The summary can be interpreted as follows-
+```{r}
+summary(mod)
+```
+
+## Optional calculations: Confidence intervals of the parameters
+```{r confidence_interval_of_parameters}
+confint(mod,level=0.99)
+```
+# Optional calculations: SS1 Test of the parameters with default orderings
+```{r SS1_test_of_parameters}
+anova(mod)
+anova(lm(C~H+P+E,COL))
+```
+#Note: SS3, the tests (F) always coincide with those of the summary (t), F = t ^ 2
+```{r }
+Anova(mod,ty=3)
+```
+# Diagnosis: TRENDS
+```{r}
+plot(predict(mod),resid(mod))
+abline(h=0,lty=2)
+```
+# Diagnostico: OUTLIERS (rstudent)
+```{r}
+plot(rstandard(mod))
+abline(h=c(-2,0,2),lty=2)
+
+plot(rstudent(mod),main="rstudent")
+abline(h=c(-2,0,2),lty=2)
+```
+# Diagnostico: LEVERAGE
+```{r}
+plot(hatvalues(mod))
+abline(h=c(0,2*mean(hatvalues(mod))),lty=2)
+```
+# Diagnosis: INFLUENCE (dffits)
+
+```{r}
+plot(cooks.distance(mod))
+abline(h=c(0,4/n),lty=2)
+
+plot(dffits(mod),main="dffits")
+abline(h=c(-2*sqrt(p/n),0,2*sqrt(p/n)),lty=2)
+```
+
+#Diagnosticos de R
+```{r }
+oldpar <- par( mfrow=c(2,2))
+plot(mod,ask=F)
+par(oldpar)
+```
+#Diagnostics: Collinearity
+We can check for the condition of Multicollinearity using the VIF function which corresponds to the ***Variance Inflation factor*** 
+```{r variance_inflation_factor}
+vif(mod)
+```
+# We remember MODEL SUMMARY
+```{r}
+summary(mod)
+```
+
+
+# Optional calculations: Confidence intervals of the parameters
+```{r}
+confint(mod,level=0.99)
+```
+# Optional calculations: For some predetermined cases IC of E (Y)
+```{r}
+(C0<-data.frame(cbind(P=c(65,75,65),E=c(15,15,12),H=c(150,150,150)), row.names=1:3))
+predict(mod, C0, interval="confidence", level=.95, se.fit=T)
+```
+# Optional calculations: For some predetermined cases I: Y Prison
+```{r}
+predict(mod, C0, interval="prediction", level=.95, se.fit=F)
+```
+# Optional calculations: SS1 Test of the parameters with default orderings
+```{r}
+anova(mod)
+```
+#Note: SS3, the tests (F) coincide with those of the summary (t), F = t ^ 2
+```{r}
+Anova(mod,ty=3)
+```
+# Linear paths in the independent variables:
+# center the data, only canvia the independent term
+```{r}
+summary(lm(C~I(P-mean(P))+I(E-mean(E))+I(H-mean(H)),COL))
+```
+# or, if P = 65, E = 15 and H = 150 are close to the means:
+```{r}
+summary(lm(C~I(P-65)+I(E-15)+I(H-150),COL))
+```
+# Linear paths in the independent variables:
+#canvas in some variable, for example, excess weight,
+# weight pattern 0.5 * H-10, EP = P- (0.5 * H-10)
+```{r}
+summary(mod2<-lm(C~I(P-0.5*H+10)+E+H,COL))
+vif(mod2)
+```
+#Note: Only canvia some parameters and collinearity
+
+# Linear paths in the independent variables:
+#remove some independent variable not significant and / or with a lot of colinealidat
+#for example H, if excess weight is already used
+```{r}
+summary(mod3<-lm(C~I(P-0.5*H+10)+E,COL))
+vif(mod3)
+```

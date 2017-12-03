@@ -1,0 +1,89 @@
+---
+output:
+  html_document: default
+  pdf_document: default
+---
+
+Loading the relevant packages:
+```{r}
+library(readr)
+sub_data <- read_delim("~/Linear Models/sub_data.txt", 
+    "\t", escape_double = FALSE, trim_ws = TRUE)
+View(sub_data)
+
+
+library(lsmeans)
+library(car)
+```
+
+### Question 1
+Define the linear model that explains FS based on SHIDR: We are trying to fit the model FS~SHIDR.  
+
+**a) Fit the model and perform the diagnostics.**
+
+```{r linear_model}
+data<-as.data.frame(sub_data)
+lin_mod<-lm(formula = FS~SHIDR, data = sub_data)
+
+```
+
+We can see the summary of the model by performing the following command-
+```{r summary_lin_mod}
+summary(lin_mod)
+
+(summary(lin_mod)$sigma)**2
+
+```
+
+
+
+```{r}
+par(mfrow=c(2,2))
+plot(lin_mod)
+```
+
+**  b) Define and perform the ANOVA test.**
+Now, performing the
+```{r}
+anova_lin_mod<-anova(lin_mod)
+anova_lin_mod
+```
+
+* c)  Compare the four treatments using Tukey's method.
+```{r}
+
+# Performing the ANOVA test
+anova(lin_mod)
+
+# ANOVA type 3 test
+Anova(lin_mod,ty=3)
+lsm<-lsmeans(lin_mod,~SHIDR)
+lsm
+
+# Pairwise comparisons
+pairs(lsm)
+
+```
+
+We can express the results of the Tukey's Test using the ***Compact letter display of pairwise comparisons*** of the four various levels of SHIDR. 
+
+Further, we can plot the results of the four levels of SHIDR and their 
+
+```{r}
+cld(lsm,alpha=0.01)
+
+```
+
+```{r}
+# Plotting the lsmean versus four levels of factor SHIDR
+plot(lsm,level=0.99)
+```
+The confidence interval used here has the confidence level of 0.01. The parameter **alpha** can be used to pass the value of desired significance level **0.01**. 
+
+
+```{r}
+# Confidence Interval
+confint(lsm,level=0.99)
+```
+
+
